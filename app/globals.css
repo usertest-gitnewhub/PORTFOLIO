@@ -71,6 +71,8 @@
     @apply border-border;
   }
   body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+      "Open Sans", "Helvetica Neue", sans-serif;
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
@@ -224,3 +226,12 @@
     transition-delay: 0s !important;
   }
 }
+
+/* Basic styling without Tailwind directives */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Add more basic styles as needed */

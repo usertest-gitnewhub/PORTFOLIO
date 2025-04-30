@@ -18,14 +18,9 @@ const nextConfig = {
   },
   // Optimize build output
   output: "standalone",
-  // Improve performance with experimental features
-  experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
-  },
   // Transpile dependencies that use modern JavaScript features
   transpilePackages: ["jspdf", "jspdf-autotable"],
-  // Webpack configuration to handle PDF generation
+  // Webpack configuration to handle PDF generation and disable CSS processing
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -34,6 +29,13 @@ const nextConfig = {
       stream: false,
       util: false,
     }
+
+    // Find and remove CSS rules to bypass Tailwind CSS processing issues
+    const cssRules = config.module.rules.find((rule) => rule.oneOf && Array.isArray(rule.oneOf))
+    if (cssRules && cssRules.oneOf) {
+      cssRules.oneOf = cssRules.oneOf.filter((rule) => !(rule.test && rule.test.toString().includes("css")))
+    }
+
     return config
   },
   // Prevent deployment issues by properly handling trailing slashes
@@ -68,10 +70,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Skip PostCSS transform if there are issues
+  // Disable CSS optimization
   experimental: {
-    // This is an experimental feature that can help bypass PostCSS issues
-    appDir: true,
+    optimizeCss: false,
+    scrollRestoration: true,
   },
 }
 
