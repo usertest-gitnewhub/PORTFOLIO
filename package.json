@@ -61,11 +61,11 @@
     "@emotion/is-prop-valid": "latest",
     "jspdf": "latest",
     "framer-motion": "latest",
-    "tailwindcss": "latest",
     "jspdf-autotable": "latest",
     "@ai-sdk/openai": "latest",
     "ai": "latest",
-    "react-syntax-highlighter": "latest"
+    "react-syntax-highlighter": "latest",
+    "tailwindcss": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
