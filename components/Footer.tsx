@@ -55,7 +55,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold">Contact Us</h3>
             <p className="text-sm text-muted-foreground flex items-center">
               <Mail className="w-4 h-4 mr-2" />
-              ail.com
+              scom
             </p>
             <Button variant="outline" size="sm" className="w-full">
               Send Feedback

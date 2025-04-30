@@ -18,9 +18,14 @@ const nextConfig = {
   },
   // Optimize build output
   output: "standalone",
+  // Improve performance with experimental features
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+  },
   // Transpile dependencies that use modern JavaScript features
   transpilePackages: ["jspdf", "jspdf-autotable"],
-  // Webpack configuration to handle PDF generation and disable CSS processing
+  // Webpack configuration to handle PDF generation
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -29,17 +34,23 @@ const nextConfig = {
       stream: false,
       util: false,
     }
-
-    // Find and remove CSS rules to bypass Tailwind CSS processing issues
-    const cssRules = config.module.rules.find((rule) => rule.oneOf && Array.isArray(rule.oneOf))
-    if (cssRules && cssRules.oneOf) {
-      cssRules.oneOf = cssRules.oneOf.filter((rule) => !(rule.test && rule.test.toString().includes("css")))
-    }
-
     return config
   },
-  // Prevent deployment issues by properly handling trailing slashes
+  // Prevent deployment errors by properly handling trailing slashes
   trailingSlash: false,
+  // Ensure proper handling of internationalized routes
+  i18n: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
+  // Properly handle redirects
+  async redirects() {
+    return []
+  },
+  // Properly handle rewrites
+  async rewrites() {
+    return []
+  },
   // Properly handle headers
   async headers() {
     return [
@@ -62,18 +73,11 @@ const nextConfig = {
       },
     ]
   },
-  // Ignore ESLint errors during builds
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Ignore TypeScript errors during builds
   typescript: {
     ignoreBuildErrors: true,
-  },
-  // Disable CSS optimization
-  experimental: {
-    optimizeCss: false,
-    scrollRestoration: true,
   },
 }
 
