@@ -61,6 +61,7 @@
     "@emotion/is-prop-valid": "latest",
     "jspdf": "latest",
     "framer-motion": "latest",
+    "tailwindcss": "latest",
     "react-syntax-highlighter": "latest",
     "jspdf-autotable": "latest",
     "ai": "latest",
