@@ -42,45 +42,24 @@ export default function CodeGenerator() {
   const { toast } = useToast()
 
   useEffect(() => {
-    try {
-      const storedHistory = localStorage.getItem("codeHistory")
-      if (storedHistory) {
-        setHistory(JSON.parse(storedHistory))
-      }
-    } catch (error) {
-      console.error("Error loading history:", error)
+    const storedHistory = localStorage.getItem("codeHistory")
+    if (storedHistory) {
+      setHistory(JSON.parse(storedHistory))
     }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!problem.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a problem description",
-        variant: "destructive",
-      })
-      return
-    }
-
     setIsLoading(true)
     try {
-      console.log("Generating code for:", { problem, language: selectedLanguage, framework: selectedFramework })
-      const code = await generateCode(problem, selectedLanguage, selectedFramework || "Core")
-      console.log("Code generated successfully")
-
+      const code = await generateCode(problem, selectedLanguage, selectedFramework)
       setGeneratedCode(code)
-
-      try {
-        const newHistory = [
-          { problem, code, language: selectedLanguage, framework: selectedFramework || "Core" },
-          ...history.slice(0, 9),
-        ]
-        setHistory(newHistory)
-        localStorage.setItem("codeHistory", JSON.stringify(newHistory))
-      } catch (historyError) {
-        console.error("Error saving history:", historyError)
-      }
+      const newHistory = [
+        { problem, code, language: selectedLanguage, framework: selectedFramework },
+        ...history.slice(0, 9),
+      ]
+      setHistory(newHistory)
+      localStorage.setItem("codeHistory", JSON.stringify(newHistory))
     } catch (error) {
       console.error("Error generating code:", error)
       let errorMessage = "Failed to generate code. Please try again."
@@ -92,33 +71,26 @@ export default function CodeGenerator() {
         description: errorMessage,
         variant: "destructive",
       })
-
       // Set a fallback message in the code area
       setGeneratedCode(`// Error: ${errorMessage}\n// Please try again with a different request.`)
-    } finally {
-      setIsLoading(false)
     }
+    setIsLoading(false)
+  }
+
+  const regenerateCode = () => {
+    handleSubmit(new Event("submit") as React.FormEvent)
   }
 
   const handleErrorFinderSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!errorFinderInput.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter code to analyze",
-        variant: "destructive",
-      })
-      return
-    }
-
     setIsLoading(true)
     try {
       const fixedCode = await generateCode(
-        `Fix the following ${selectedLanguage} ${selectedFramework || "Core"} code and explain the errors:
+        `Fix the following ${selectedLanguage} ${selectedFramework} code and explain the errors:
 
 ${errorFinderInput}`,
         selectedLanguage,
-        selectedFramework || "Core",
+        selectedFramework,
       )
       setErrorFinderOutput(fixedCode)
     } catch (error) {
@@ -132,12 +104,8 @@ ${errorFinderInput}`,
         description: errorMessage,
         variant: "destructive",
       })
-
-      // Set a fallback message
-      setErrorFinderOutput(`// Error: ${errorMessage}\n// Please try again with a different request.`)
-    } finally {
-      setIsLoading(false)
     }
+    setIsLoading(false)
   }
 
   return (
@@ -167,11 +135,7 @@ ${errorFinderInput}`,
                     ))}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={selectedFramework}
-                  onValueChange={setSelectedFramework}
-                  defaultValue={languages.find((lang) => lang.name === selectedLanguage)?.frameworks[0] || ""}
-                >
+                <Select value={selectedFramework} onValueChange={setSelectedFramework}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Framework" />
                   </SelectTrigger>
@@ -187,7 +151,7 @@ ${errorFinderInput}`,
                 </Select>
               </div>
               <Textarea
-                placeholder={`Describe your ${selectedLanguage} ${selectedFramework || "Core"} problem here...`}
+                placeholder={`Describe your ${selectedLanguage} ${selectedFramework} problem here...`}
                 value={problem}
                 onChange={(e) => setProblem(e.target.value)}
                 className="min-h-[150px] text-lg"
@@ -211,7 +175,7 @@ ${errorFinderInput}`,
                     exit={{ opacity: 0 }}
                   >
                     <Zap className="mr-2 h-4 w-4" />
-                    Generate {selectedLanguage} {selectedFramework || "Core"} Code
+                    Generate {selectedLanguage} {selectedFramework} Code
                   </motion.div>
                 )}
               </Button>
@@ -220,7 +184,7 @@ ${errorFinderInput}`,
               isLoading={isLoading}
               output={generatedCode}
               language={selectedLanguage.toLowerCase()}
-              title={`${selectedLanguage} ${selectedFramework || "Core"} Code`}
+              title={`${selectedLanguage} ${selectedFramework} Code`}
             />
           </TabsContent>
           <TabsContent value="errorFinder" className="space-y-6">
@@ -238,11 +202,7 @@ ${errorFinderInput}`,
                     ))}
                   </SelectContent>
                 </Select>
-                <Select
-                  value={selectedFramework}
-                  onValueChange={setSelectedFramework}
-                  defaultValue={languages.find((lang) => lang.name === selectedLanguage)?.frameworks[0] || ""}
-                >
+                <Select value={selectedFramework} onValueChange={setSelectedFramework}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Framework" />
                   </SelectTrigger>
@@ -258,7 +218,7 @@ ${errorFinderInput}`,
                 </Select>
               </div>
               <Textarea
-                placeholder={`Paste your ${selectedLanguage} ${selectedFramework || "Core"} code with errors here...`}
+                placeholder={`Paste your ${selectedLanguage} ${selectedFramework} code with errors here...`}
                 value={errorFinderInput}
                 onChange={(e) => setErrorFinderInput(e.target.value)}
                 className="min-h-[150px] text-lg"

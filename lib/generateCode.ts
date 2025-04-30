@@ -1,6 +1,4 @@
 export async function generateCode(problem: string, language: string, framework: string): Promise<string> {
-  console.log("generateCode called with:", { problem, language, framework })
-
   try {
     const response = await fetch("/api/generate", {
       method: "POST",
@@ -14,96 +12,21 @@ export async function generateCode(problem: string, language: string, framework:
       }),
     })
 
-    console.log("API response status:", response.status)
-
     if (!response.ok) {
-      console.error("API error:", response.status, response.statusText)
-      return generateFallbackCode(problem, language, framework)
+      const errorText = await response.text()
+      console.error("API error:", errorText)
+      throw new Error(`Failed to generate code: ${response.status}`)
     }
 
-    try {
-      const data = await response.json()
-      console.log("API response parsed successfully")
+    const data = await response.json()
 
-      if (data.error) {
-        console.error("API returned error:", data.error)
-        return generateFallbackCode(problem, language, framework)
-      }
-
-      return data.code || generateFallbackCode(problem, language, framework)
-    } catch (parseError) {
-      console.error("Error parsing API response:", parseError)
-      return generateFallbackCode(problem, language, framework)
+    if (data.error) {
+      throw new Error(data.error)
     }
+
+    return data.code || "// No code was generated. Please try again."
   } catch (error) {
     console.error("Error in generateCode:", error)
-    return generateFallbackCode(problem, language, framework)
+    throw error
   }
-}
-
-// Fallback code generator function
-function generateFallbackCode(problem: string, language: string, framework: string): string {
-  const lang = language.toLowerCase()
-
-  if (lang === "python") {
-    return `# ${problem}
-# Generated ${framework} solution
-
-def main():
-    print("Solution for: ${problem}")
-    # Implementation would go here
-    return "Solution"
-
-if __name__ == "__main__":
-    result = main()
-    print(result)`
-  }
-
-  if (lang === "javascript" || lang === "typescript") {
-    return `// ${problem}
-// Generated ${framework} solution
-
-function main() {
-  console.log("Solution for: ${problem}");
-  // Implementation would go here
-  return "Solution";
-}
-
-const result = main();
-console.log(result);`
-  }
-
-  if (lang === "java") {
-    return `// ${problem}
-// Generated ${framework} solution
-
-public class Solution {
-  public static void main(String[] args) {
-    System.out.println("Solution for: ${problem}");
-    // Implementation would go here
-    String result = "Solution";
-    System.out.println(result);
-  }
-}`
-  }
-
-  if (lang === "matlab") {
-    return `% ${problem}
-% Generated ${framework} solution
-
-function result = main()
-    disp('Solution for: ${problem}');
-    % Implementation would go here
-    result = 'Solution';
-end
-
-result = main();
-disp(result);`
-  }
-
-  return `// ${problem}
-// Generated ${language} ${framework} solution
-
-// Implementation would go here
-// This is a placeholder for the actual solution`
 }
