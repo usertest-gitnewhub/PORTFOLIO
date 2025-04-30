@@ -48,8 +48,10 @@ export default function CodeGenerator() {
     }
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+    }
     setIsLoading(true)
     try {
       const code = await generateCode(problem, selectedLanguage, selectedFramework)
@@ -71,14 +73,12 @@ export default function CodeGenerator() {
         description: errorMessage,
         variant: "destructive",
       })
-      // Set a fallback message in the code area
-      setGeneratedCode(`// Error: ${errorMessage}\n// Please try again with a different request.`)
     }
     setIsLoading(false)
   }
 
   const regenerateCode = () => {
-    handleSubmit(new Event("submit") as React.FormEvent)
+    handleSubmit()
   }
 
   const handleErrorFinderSubmit = async (e: React.FormEvent) => {

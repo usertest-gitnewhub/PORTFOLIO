@@ -102,7 +102,12 @@ function useChallenge(difficulty: string) {
 
     if (storedChallenge && !shouldRefresh) {
       // Use stored challenge if it exists and doesn't need refresh
-      setChallenge(JSON.parse(storedChallenge))
+      try {
+        setChallenge(JSON.parse(storedChallenge))
+      } catch (err) {
+        console.error("Error parsing stored challenge:", err)
+        await fetchChallenge()
+      }
     } else {
       // Fetch new challenge if needed
       await fetchChallenge()
