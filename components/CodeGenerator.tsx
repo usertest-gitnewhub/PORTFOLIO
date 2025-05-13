@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { HistoryIcon, RefreshCw, Zap, Code, AlertTriangle, X } from "lucide-react"
+import { HistoryIcon, RefreshCw, Zap, Code, AlertTriangle, X, Info } from "lucide-react"
 import { generateCode } from "@/lib/generateCode"
 import { useToast } from "@/components/ui/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { OutputFormat } from "./OutputFormat"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const languages = [
   { name: "Python", frameworks: ["Django", "Flask", "FastAPI"] },
@@ -29,6 +30,34 @@ const languages = [
   { name: "MATLAB", frameworks: ["Core", "Simulink", "Image Processing Toolbox", "Signal Processing Toolbox"] },
 ]
 
+// Sample code examples for fallback
+const fallbackExamples = {
+  python: `def hello_world():
+    print("Hello, World!")
+    
+hello_world()`,
+  javascript: `function helloWorld() {
+  console.log("Hello, World!");
+}
+
+helloWorld();`,
+  typescript: `function helloWorld(): void {
+  console.log("Hello, World!");
+}
+
+helloWorld();`,
+  java: `public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`,
+  matlab: `function helloWorld()
+    disp('Hello, World!');
+end
+
+helloWorld();`,
+}
+
 export default function CodeGenerator() {
   const [problem, setProblem] = useState("")
   const [generatedCode, setGeneratedCode] = useState("")
@@ -39,12 +68,18 @@ export default function CodeGenerator() {
   const [errorFinderInput, setErrorFinderInput] = useState("")
   const [errorFinderOutput, setErrorFinderOutput] = useState("")
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
     const storedHistory = localStorage.getItem("codeHistory")
     if (storedHistory) {
-      setHistory(JSON.parse(storedHistory))
+      try {
+        setHistory(JSON.parse(storedHistory))
+      } catch (e) {
+        console.error("Failed to parse history from localStorage:", e)
+        localStorage.removeItem("codeHistory")
+      }
     }
   }, [])
 
@@ -52,7 +87,20 @@ export default function CodeGenerator() {
     if (e) {
       e.preventDefault()
     }
+
+    // Validate input
+    if (!problem.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a problem description",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
+    setApiError(null)
+
     try {
       const code = await generateCode(problem, selectedLanguage, selectedFramework)
       setGeneratedCode(code)
@@ -68,11 +116,25 @@ export default function CodeGenerator() {
       if (error instanceof Error) {
         errorMessage = error.message
       }
+
+      // Set API error state
+      setApiError(errorMessage)
+
+      // Show toast with error
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       })
+
+      // Set fallback code example if available
+      const langKey = selectedLanguage.toLowerCase() as keyof typeof fallbackExamples
+      if (fallbackExamples[langKey]) {
+        setGeneratedCode(`// Note: This is a fallback example as code generation failed
+// Error: ${errorMessage}
+
+${fallbackExamples[langKey]}`)
+      }
     }
     setIsLoading(false)
   }
@@ -83,7 +145,20 @@ export default function CodeGenerator() {
 
   const handleErrorFinderSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate input
+    if (!errorFinderInput.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter code to analyze",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
+    setApiError(null)
+
     try {
       const fixedCode = await generateCode(
         `Fix the following ${selectedLanguage} ${selectedFramework} code and explain the errors:
@@ -99,11 +174,22 @@ ${errorFinderInput}`,
       if (error instanceof Error) {
         errorMessage = error.message
       }
+
+      // Set API error state
+      setApiError(errorMessage)
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       })
+
+      // Set fallback error analysis
+      setErrorFinderOutput(`// Error analysis could not be completed
+// Error: ${errorMessage}
+
+// Here's your original code:
+${errorFinderInput}`)
     }
     setIsLoading(false)
   }
@@ -111,6 +197,22 @@ ${errorFinderInput}`,
   return (
     <Card className="w-full bg-card relative overflow-hidden shadow-lg border border-primary/20">
       <CardContent className="p-6 space-y-6">
+        {apiError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              {apiError}
+              {apiError.includes("API") && (
+                <p className="mt-2 text-sm">
+                  This may be due to missing API keys or service unavailability. Please try again later or contact
+                  support.
+                </p>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="generator" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="generator" className="text-lg">
@@ -257,6 +359,17 @@ ${errorFinderInput}`,
             />
           </TabsContent>
         </Tabs>
+
+        {/* Information alert about API requirements */}
+        <Alert className="mt-4">
+          <Info className="h-4 w-4" />
+          <AlertTitle>API Requirements</AlertTitle>
+          <AlertDescription>
+            This code generator requires the GROQ_API_KEY environment variable to be set. Make sure it's properly
+            configured in your environment.
+          </AlertDescription>
+        </Alert>
+
         {history.length > 0 && (
           <motion.div
             className="fixed bottom-4 right-4 z-50"
