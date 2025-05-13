@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     domains: ["placeholder.com"],
     remotePatterns: [
@@ -18,11 +17,6 @@ const nextConfig = {
   },
   // Optimize build output
   output: "standalone",
-  // Improve performance with experimental features
-  experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
-  },
   // Transpile dependencies that use modern JavaScript features
   transpilePackages: ["jspdf", "jspdf-autotable"],
   // Webpack configuration to handle PDF generation
@@ -38,28 +32,6 @@ const nextConfig = {
   },
   // Prevent deployment issues by properly handling trailing slashes
   trailingSlash: false,
-  // Properly handle headers
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-        ],
-      },
-    ]
-  },
   // Ignore ESLint errors during builds
   eslint: {
     ignoreDuringBuilds: true,
@@ -68,6 +40,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Disable page optimization to prevent export errors
+  optimizeFonts: false,
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig
