@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Home, RefreshCw } from "lucide-react"
+import { RefreshCcw } from "lucide-react"
 
 export default function Error({
   error,
@@ -19,20 +18,11 @@ export default function Error({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
-      <h1 className="text-4xl md:text-6xl font-bold text-primary mb-4">Something went wrong</h1>
-      <p className="text-muted-foreground mb-8 max-w-md">
-        We apologize for the inconvenience. Please try again or return to the home page.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button onClick={reset} variant="outline" className="flex items-center">
-          <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-        </Button>
-        <Link href="/">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Home className="mr-2 h-4 w-4" /> Back to Home
-          </Button>
-        </Link>
-      </div>
+      <h1 className="text-4xl md:text-6xl font-bold text-primary mb-4">Something went wrong!</h1>
+      <p className="text-muted-foreground mb-8 max-w-md">An unexpected error has occurred. Please try again later.</p>
+      <Button onClick={reset} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <RefreshCcw className="mr-2 h-4 w-4" /> Try again
+      </Button>
     </div>
   )
 }
