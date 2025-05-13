@@ -16,7 +16,7 @@ export default function Footer() {
               and frameworks.
             </p>
             <div className="flex space-x-4">
-              {[, { icon: Linkedin, href: "https://in.linkedin.com/" }, ,].map((item, index) => (
+              {[, { icon: Linkedin, href: "https://in.linkedin.com/in/shashank-vimal-08844b279" }, ,].map((item, index) => (
                 <a
                   key={index}
                   href={item.href}
@@ -55,7 +55,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold">Contact Us</h3>
             <p className="text-sm text-muted-foreground flex items-center">
               <Mail className="w-4 h-4 mr-2" />
-              ail.com
+              shashank.dev.work@gmail.com
             </p>
             <Button variant="outline" size="sm" className="w-full">
               Send Feedback
