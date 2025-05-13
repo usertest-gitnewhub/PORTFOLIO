@@ -68,6 +68,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Prevent 404 errors in production
+  async rewrites() {
+    return [
+      {
+        source: "/_error/:path*",
+        destination: "/404",
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
