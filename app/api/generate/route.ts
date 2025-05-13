@@ -1,15 +1,15 @@
-import { generateText } from "ai"
-import { createOpenAI as createGroq } from "@ai-sdk/openai"
 import { NextResponse } from "next/server"
+import { createOpenAI as createGroq } from "@ai-sdk/openai"
+import { generateText } from "ai"
 
 const groq = createGroq({
   baseURL: "https://api.groq.com/openai/v1",
   apiKey: process.env.GROQ_API_KEY,
 })
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { problem, language, framework } = await request.json()
+    const { problem, language, framework } = await req.json()
 
     const prompt = `Generate ${language.toUpperCase()} code ${
       framework !== "Core" ? `using the ${framework} framework ` : ""

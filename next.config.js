@@ -36,21 +36,8 @@ const nextConfig = {
     }
     return config
   },
-  // Prevent deployment errors by properly handling trailing slashes
+  // Prevent deployment issues by properly handling trailing slashes
   trailingSlash: false,
-  // Ensure proper handling of internationalized routes
-  i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
-  },
-  // Properly handle redirects
-  async redirects() {
-    return []
-  },
-  // Properly handle rewrites
-  async rewrites() {
-    return []
-  },
   // Properly handle headers
   async headers() {
     return [
@@ -73,9 +60,11 @@ const nextConfig = {
       },
     ]
   },
+  // Ignore ESLint errors during builds
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Ignore TypeScript errors during builds
   typescript: {
     ignoreBuildErrors: true,
   },

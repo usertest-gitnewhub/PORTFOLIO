@@ -255,9 +255,11 @@ export default function AnimatedHome() {
                 <p className="text-sm text-muted-foreground">
                   Perfect for those just starting their coding journey. Solve simple problems and build your confidence.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Try Beginner Challenge
-                </Button>
+                <Link href="/challenges">
+                  <Button variant="outline" className="w-full">
+                    Try Beginner Challenge
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -272,9 +274,11 @@ export default function AnimatedHome() {
                 <p className="text-sm text-muted-foreground">
                   Ready for more? Test your skills with our intermediate challenges and level up your coding abilities.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Try Intermediate Challenge
-                </Button>
+                <Link href="/challenges">
+                  <Button variant="outline" className="w-full">
+                    Try Intermediate Challenge
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
 
@@ -289,9 +293,11 @@ export default function AnimatedHome() {
                 <p className="text-sm text-muted-foreground">
                   Push your limits with complex problems that will challenge even experienced developers.
                 </p>
-                <Button variant="outline" className="w-full">
-                  Try Advanced Challenge
-                </Button>
+                <Link href="/challenges">
+                  <Button variant="outline" className="w-full">
+                    Try Advanced Challenge
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

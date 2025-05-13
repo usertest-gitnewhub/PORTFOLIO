@@ -48,8 +48,10 @@ export default function CodeGenerator() {
     }
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+    }
     setIsLoading(true)
     try {
       const code = await generateCode(problem, selectedLanguage, selectedFramework)
@@ -76,7 +78,7 @@ export default function CodeGenerator() {
   }
 
   const regenerateCode = () => {
-    handleSubmit(new Event("submit") as React.FormEvent)
+    handleSubmit()
   }
 
   const handleErrorFinderSubmit = async (e: React.FormEvent) => {
