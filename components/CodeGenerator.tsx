@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { HistoryIcon, RefreshCw, Zap, Code, AlertTriangle, X, Info } from "lucide-react"
+import { HistoryIcon, RefreshCw, Zap, Code, AlertTriangle, X } from "lucide-react"
 import { generateCode } from "@/lib/generateCode"
 import { useToast } from "@/components/ui/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -30,34 +30,6 @@ const languages = [
   { name: "MATLAB", frameworks: ["Core", "Simulink", "Image Processing Toolbox", "Signal Processing Toolbox"] },
 ]
 
-// Sample code examples for fallback
-const fallbackExamples = {
-  python: `def hello_world():
-    print("Hello, World!")
-    
-hello_world()`,
-  javascript: `function helloWorld() {
-  console.log("Hello, World!");
-}
-
-helloWorld();`,
-  typescript: `function helloWorld(): void {
-  console.log("Hello, World!");
-}
-
-helloWorld();`,
-  java: `public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
-}`,
-  matlab: `function helloWorld()
-    disp('Hello, World!');
-end
-
-helloWorld();`,
-}
-
 export default function CodeGenerator() {
   const [problem, setProblem] = useState("")
   const [generatedCode, setGeneratedCode] = useState("")
@@ -71,15 +43,25 @@ export default function CodeGenerator() {
   const [apiError, setApiError] = useState<string | null>(null)
   const { toast } = useToast()
 
+  // Load history from localStorage
   useEffect(() => {
-    const storedHistory = localStorage.getItem("codeHistory")
-    if (storedHistory) {
-      try {
+    try {
+      const storedHistory = localStorage.getItem("codeHistory")
+      if (storedHistory) {
         setHistory(JSON.parse(storedHistory))
-      } catch (e) {
-        console.error("Failed to parse history from localStorage:", e)
-        localStorage.removeItem("codeHistory")
       }
+    } catch (e) {
+      console.error("Failed to parse history from localStorage:", e)
+      localStorage.removeItem("codeHistory")
+    }
+  }, [])
+
+  // Save history to localStorage
+  const saveHistory = useCallback((newHistory: typeof history) => {
+    try {
+      localStorage.setItem("codeHistory", JSON.stringify(newHistory))
+    } catch (e) {
+      console.error("Failed to save history to localStorage:", e)
     }
   }, [])
 
@@ -87,6 +69,9 @@ export default function CodeGenerator() {
     if (e) {
       e.preventDefault()
     }
+
+    // Reset states
+    setApiError(null)
 
     // Validate input
     if (!problem.trim()) {
@@ -99,19 +84,27 @@ export default function CodeGenerator() {
     }
 
     setIsLoading(true)
-    setApiError(null)
+    console.log("Submitting problem:", problem)
 
     try {
+      // Generate code
       const code = await generateCode(problem, selectedLanguage, selectedFramework)
+      console.log("Code generated successfully")
+
+      // Update state with generated code
       setGeneratedCode(code)
+
+      // Update history
       const newHistory = [
         { problem, code, language: selectedLanguage, framework: selectedFramework },
         ...history.slice(0, 9),
       ]
       setHistory(newHistory)
-      localStorage.setItem("codeHistory", JSON.stringify(newHistory))
+      saveHistory(newHistory)
     } catch (error) {
       console.error("Error generating code:", error)
+
+      // Format error message
       let errorMessage = "Failed to generate code. Please try again."
       if (error instanceof Error) {
         errorMessage = error.message
@@ -126,25 +119,16 @@ export default function CodeGenerator() {
         description: errorMessage,
         variant: "destructive",
       })
-
-      // Set fallback code example if available
-      const langKey = selectedLanguage.toLowerCase() as keyof typeof fallbackExamples
-      if (fallbackExamples[langKey]) {
-        setGeneratedCode(`// Note: This is a fallback example as code generation failed
-// Error: ${errorMessage}
-
-${fallbackExamples[langKey]}`)
-      }
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
-  }
-
-  const regenerateCode = () => {
-    handleSubmit()
   }
 
   const handleErrorFinderSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Reset states
+    setApiError(null)
 
     // Validate input
     if (!errorFinderInput.trim()) {
@@ -157,7 +141,7 @@ ${fallbackExamples[langKey]}`)
     }
 
     setIsLoading(true)
-    setApiError(null)
+    console.log("Submitting code for error analysis")
 
     try {
       const fixedCode = await generateCode(
@@ -167,10 +151,13 @@ ${errorFinderInput}`,
         selectedLanguage,
         selectedFramework,
       )
+      console.log("Error analysis completed successfully")
       setErrorFinderOutput(fixedCode)
     } catch (error) {
       console.error("Error finding errors:", error)
-      let errorMessage = "Failed to find errors. Please try again."
+
+      // Format error message
+      let errorMessage = "Failed to analyze code. Please try again."
       if (error instanceof Error) {
         errorMessage = error.message
       }
@@ -178,6 +165,7 @@ ${errorFinderInput}`,
       // Set API error state
       setApiError(errorMessage)
 
+      // Show toast with error
       toast({
         title: "Error",
         description: errorMessage,
@@ -190,8 +178,9 @@ ${errorFinderInput}`,
 
 // Here's your original code:
 ${errorFinderInput}`)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (
@@ -201,15 +190,7 @@ ${errorFinderInput}`)
           <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {apiError}
-              {apiError.includes("API") && (
-                <p className="mt-2 text-sm">
-                  This may be due to missing API keys or service unavailability. Please try again later or contact
-                  support.
-                </p>
-              )}
-            </AlertDescription>
+            <AlertDescription>{apiError}</AlertDescription>
           </Alert>
         )}
 
@@ -359,16 +340,6 @@ ${errorFinderInput}`)
             />
           </TabsContent>
         </Tabs>
-
-        {/* Information alert about API requirements */}
-        <Alert className="mt-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>API Requirements</AlertTitle>
-          <AlertDescription>
-            This code generator requires the GROQ_API_KEY environment variable to be set. Make sure it's properly
-            configured in your environment.
-          </AlertDescription>
-        </Alert>
 
         {history.length > 0 && (
           <motion.div
