@@ -258,10 +258,13 @@ export async function POST(req: Request) {
       console.log("Request body received:", JSON.stringify(body))
     } catch (parseError) {
       console.error("Failed to parse request body:", parseError)
-      return NextResponse.json({
-        code: "// Error: Invalid request format\n// Please provide a valid problem description",
-        error: "Invalid JSON in request body",
-      })
+      return NextResponse.json(
+        {
+          code: "// Error: Invalid request format\n// Please provide a valid problem description",
+          error: "Invalid JSON in request body",
+        },
+        { status: 400 },
+      )
     }
 
     const { problem, language, framework } = body
@@ -269,10 +272,13 @@ export async function POST(req: Request) {
     // Validate required fields
     if (!problem || !language) {
       console.error("Missing required fields:", { problem, language })
-      return NextResponse.json({
-        code: "// Error: Missing required fields\n// Please provide both a problem description and a language",
-        error: "Missing required fields",
-      })
+      return NextResponse.json(
+        {
+          code: "// Error: Missing required fields\n// Please provide both a problem description and a language",
+          error: "Missing required fields",
+        },
+        { status: 400 },
+      )
     }
 
     // Check if API key is available and try to use it
@@ -328,9 +334,12 @@ Please provide only the ${language.toUpperCase()} code without any explanations.
     console.error("Unhandled error in API route:", error)
 
     // Always return a valid response even in case of errors
-    return NextResponse.json({
-      code: `// An error occurred while generating code\n// Error: ${error instanceof Error ? error.message : "Unknown error"}\n\n// Please try again with a different description`,
-      error: "Failed to generate code",
-    })
+    return NextResponse.json(
+      {
+        code: `// An error occurred while generating code\n// Error: ${error instanceof Error ? error.message : "Unknown error"}\n\n// Please try again with a different description`,
+        error: "Failed to generate code",
+      },
+      { status: 500 },
+    )
   }
 }
